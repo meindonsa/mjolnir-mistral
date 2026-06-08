@@ -4,8 +4,10 @@ import { useConfigStore } from '@/core/stores/config.ts'
 
 const useConfig = useConfigStore()
 const showModels = ref(false)
+const aiName = ref(useConfig.aiName)
 const models = computed(() => useConfig.models)
 const model = ref<string>('mistral-medium-2508')
+const nameCheck = computed(() => aiName.value == useConfig.aiName)
 const emit = defineEmits(['onClose'])
 
 const close = () => {
@@ -20,8 +22,12 @@ onMounted(() => {
   useConfig.getModels()
 })
 
-function getBoolen(value: boolean) {
+function getBoolean(value: boolean) {
   return value ? 'Oui' : 'Non'
+}
+
+const saveAiName = () => {
+  useConfig.updateAiName(aiName.value)
 }
 </script>
 
@@ -71,7 +77,7 @@ function getBoolen(value: boolean) {
                     <span> - </span>
                     <span>
                       <span class="text-cyan-500/70">Audio: </span>
-                      {{ getBoolen(item.capabilities.audio) }}
+                      {{ getBoolean(item.capabilities.audio) }}
                     </span>
                   </p>
                 </div>
@@ -94,12 +100,20 @@ function getBoolen(value: boolean) {
       <!-- API KEY -->
       <div class="border border-[#1a3455]/60 rounded-md p-3">
         <h5 class="text-lg font-semibold text-white text-heading mb-3">Nom de votre IA</h5>
-        <div class="flex items-center">
+        <div class="flex items-center gap-2">
           <input
             type="text"
+            v-model.trim="aiName"
             placeholder="Transmettez votre message…"
             class="flex-1 bg-[#091525] border border-[#1a3455] text-white focus:border-cyan-400 rounded-md px-5 py-3 text-sm resize-y min-h-11.5 max-h-40 outline-none transition-all"
           />
+          <button
+            :disabled="nameCheck"
+            @click="saveAiName"
+            class="w-11 h-11 bg-[#091525] border border-[#1a3455] text-white hover:border-cyan-400 rounded-md flex items-center justify-center text-xl transition-all cursor-pointer"
+          >
+            +
+          </button>
         </div>
       </div>
     </div>

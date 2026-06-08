@@ -4,10 +4,15 @@ import mistral, { type Model } from '@/core/api/mistral.ts'
 
 export const useConfigStore = defineStore('config', () => {
   const models = ref<Model[]>([])
+  const aiName = ref<string>('Mjolnir')
 
-   function getModels() {
-    if(models.value.length > 0) return;
-    mistral.models.list().then(res => {
+  const updateAiName = (name: string) => {
+    aiName.value = name;
+  }
+
+  function getModels() {
+    if (models.value.length > 0) return
+    mistral.models.list().then((res) => {
       models.value =
         res.data
           ?.filter((m: any) => !m.archived)
@@ -25,12 +30,14 @@ export const useConfigStore = defineStore('config', () => {
               completion_fim: item.completion_fim,
             },
           })) || []
-      console.log(models.value);
+      console.log(models.value)
     })
   }
 
   return {
-     models,
+    models,
+    aiName,
     getModels,
+    updateAiName
   }
 })
