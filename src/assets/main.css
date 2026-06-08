@@ -1,0 +1,32 @@
+@import "tailwindcss";
+.hud-btn {
+  @apply bg-[#091525] border border-[#1a3455] hover:border-cyan-400 text-xs font-mono px-4 py-2 rounded-lg transition-all active:scale-95;
+}
+
+.close-modal-btn{
+    @apply flex justify-center items-center size-8 border border-[#1a3455]/60 hover:bg-white font-semibold transition-all uppercase text-white hover:text-[#1a3455]/60 cursor-pointer
+}
+
+[data-theme="cyber"] {
+  --tw-ring-color: #00e5ff;
+}
+
+:root {
+    --wire: #1a3455;
+    --r-lg: 12px;
+    --border: 1px solid var(--wire);
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 229, 255, 0.03) 2px,
+          rgba(0, 229, 255, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
