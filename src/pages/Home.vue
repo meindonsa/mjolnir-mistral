@@ -127,7 +127,7 @@ onMounted(() => {})
       class="border-t border-[#1a3455] bg-[#050d18]/95 backdrop-blur-xl p-4 flex gap-3 items-end"
     >
       <button
-        @click="chatOpened = true"
+        @click="chatOpened = !chatOpened"
         class="w-11 h-11 bg-[#091525] border border-[#1a3455] hover:border-cyan-400 rounded-xl flex items-center justify-center text-xl transition-all"
       >
         💬
@@ -153,6 +153,24 @@ onMounted(() => {})
   </div>
 
   <Teleport to="body">
-    <Chats v-if="chatOpened" :conversations="[{ title: 'Bonjour', uuid: 'sgt6hs7', createdAt: new Date() }]" />
+    <Transition name="slide-fade-chat" mode="out-in" appear>
+      <Chats v-if="chatOpened" @onClose="chatOpened = false" />
+    </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+.slide-fade-chat-enter-active {
+  transition: all 0.2s ease-out;
+}
+
+.slide-fade-chat-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-chat-enter-from,
+.slide-fade-chat-leave-to {
+  transform: translateY(20px);
+  opacity: 0;
+}
+</style>

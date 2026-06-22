@@ -1,38 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { type Chat, type ChatProps } from '@/core/api/models.ts'
+import { useChatStore } from '@/core/stores/chat.ts'
 
-export interface Conversation {
-  uuid: string
-  title: string
-  preview?: string
-  createdAt?: Date
-}
+const chatStore = useChatStore()
+const loading = computed(() => chatStore.loading)
+const activeUuid = computed(() => chatStore.currentChat?.uuid)
+const conversations = computed(() => chatStore.chats as Chat[])
 
-interface Props {
-  conversations: Conversation[]
-  activeUuid?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  activeUuid: '',
-})
-
-const emit = defineEmits(['onClose', 'select', 'delete'])
-
-// ---------------------------------------------------------------------------
-// Rename inline
-// ---------------------------------------------------------------------------
 const renamingUuid = ref<string | null>(null)
 const renameValue = ref('')
 
-function startRename(conv: Conversation) {
+const emit = defineEmits(['onClose'])
+
+function startRename(conv: Chat) {
   renamingUuid.value = conv.uuid
-  renameValue.value = conv.title
+  renameValue.value = conv.name
 }
 
-function confirmRename(uuid: string) {
-  //if (renameValue.value.trim()) emit('rename', uuid)
-  //renamingUuid.value = null
+function confirmRename() {
+  if (loading.value) return
+  if (renamingUuid.value === null || renameValue.value === null) return
+  chatStore.renameChat(renamingUuid.value, renameValue.value)
+  renamingUuid.value = null
+  renameValue.value = ''
+}
+
+function selectChat(uuid: string) {
+  chatStore.selectChat(uuid)
+}
+
+function deteleChat(uuid: string) {
+  chatStore.removeChat(uuid)
 }
 
 const close = () => {
@@ -71,7 +70,7 @@ const close = () => {
           : 'bg-slate-900/40 border-slate-700/40 hover:bg-cyan-950/30 hover:border-cyan-700/40',
       ]"
       :style="{ animationDelay: `${i * 40}ms` }"
-      @click="emit('select', conv.uuid)"
+      @click="selectChat(conv.uuid)"
     >
       <!-- Accent bar gauche -->
       <div
@@ -87,8 +86,8 @@ const close = () => {
           v-model="renameValue"
           class="w-full bg-transparent border-b border-cyan-400 text-cyan-100 text-sm outline-none pb-px"
           autofocus
-          @blur="confirmRename(conv.uuid)"
-          @keydown.enter.prevent="confirmRename(conv.uuid)"
+          @blur="confirmRename()"
+          @keydown.enter.prevent="confirmRename()"
           @keydown.escape="renamingUuid = null"
           @click.stop
         />
@@ -99,15 +98,7 @@ const close = () => {
             activeUuid === conv.uuid ? 'text-cyan-100' : 'text-slate-300 group-hover:text-cyan-200'
           "
         >
-          {{ conv.title }}
-        </div>
-
-        <!-- Preview -->
-        <div
-          v-if="conv.preview && renamingUuid !== conv.uuid"
-          class="text-[11px] text-slate-500 truncate mt-0.5 group-hover:text-slate-400 transition-colors"
-        >
-          {{ conv.preview }}
+          {{ conv.name }}
         </div>
       </div>
 
@@ -117,40 +108,21 @@ const close = () => {
         @click.stop
       >
         <!-- Renommer -->
-        <button class="action-btn" title="Renommer" @click="startRename(conv)">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            class="size-3"
-          >
-            <path
-              d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596.892l-.848 2.047a.75.75 0 0 0 .98.98l2.047-.848a2.75 2.75 0 0 0 .892-.596l4.261-4.262a1.75 1.75 0 0 0 0-2.474Z"
-            />
-            <path
-              d="M4.75 3.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h6.5c.69 0 1.25-.56 1.25-1.25V9A.75.75 0 0 1 14 9v2.25A2.75 2.75 0 0 1 11.25 14h-6.5A2.75 2.75 0 0 1 2 11.25v-6.5A2.75 2.75 0 0 1 4.75 2H7a.75.75 0 0 1 0 1.5H4.75Z"
-            />
-          </svg>
+        <button
+          class="action-btn text-white hover:text-orange-400 hover:border-orange-500/40 hover:bg-orange-950/30"
+          title="Renommer"
+          @click="startRename(conv)"
+        >
+          <i class="bx bx-edit"></i>
         </button>
 
         <!-- Supprimer -->
         <button
-          class="action-btn hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30"
+          class="action-btn text-white hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30"
           title="Supprimer"
-          @click="emit('delete', conv.uuid)"
+          @click="deteleChat(conv.uuid)"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            class="size-3"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z"
-              clip-rule="evenodd"
-            />
-          </svg>
+          <i class="bx bx-trash"></i>
         </button>
       </div>
     </div>
@@ -162,6 +134,7 @@ const close = () => {
 }
 
 .action-btn {
+  cursor: pointer;
 }
 
 /* Animation d'entrée des items */

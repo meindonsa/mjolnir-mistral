@@ -15,6 +15,7 @@
     "@mistralai/mistralai": "^2.2.5",
     "@tailwindcss/vite": "^4.3.0",
     "@vue/server-renderer": "^3.5.35",
+    "boxicons": "^2.1.4",
     "dompurify": "^3.4.8",
     "express": "^5.2.1",
     "marked": "^18.0.5",
