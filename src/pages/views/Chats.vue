@@ -17,12 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
   activeUuid: '',
 })
 
-const emit = defineEmits<{
-  select: [uuid: string]
-  rename: [uuid: string]
-  duplicate: [uuid: string]
-  delete: [uuid: string]
-}>()
+const emit = defineEmits(['onClose', 'select', 'delete'])
 
 // ---------------------------------------------------------------------------
 // Rename inline
@@ -36,19 +31,25 @@ function startRename(conv: Conversation) {
 }
 
 function confirmRename(uuid: string) {
-  if (renameValue.value.trim()) emit('rename', uuid)
-  renamingUuid.value = null
+  //if (renameValue.value.trim()) emit('rename', uuid)
+  //renamingUuid.value = null
+}
+
+const close = () => {
+  emit('onClose')
 }
 </script>
 
 <template>
-  <div class="conversation-list fixed flex flex-col gap-2 w-full font-mono">
+  <div
+    class="z-100 w-[50vw] px-5 py-3 h-[calc(100vh-5rem)] fixed top-0 left-0 bg-[#050d18]/95 border-b border-[#1a3455]/50 backdrop-blur-xl"
+  >
     <!-- Header -->
-    <div class="flex items-center justify-between px-1 mb-1">
-      <span class="text-[10px] tracking-[0.2em] text-cyan-500/70 uppercase font-semibold">
-        ⬡ Conversations
-        <span class="ml-2 text-cyan-400/50">({{ conversations.length }})</span>
+    <div class="flex items-center justify-between mb-10">
+      <span class="text-md tracking-[0.2em] text-cyan-500/70 uppercase font-semibold">
+        ⬡ Historique
       </span>
+      <div @click="close" class="close-modal-btn">X</div>
     </div>
 
     <!-- Liste vide -->
@@ -80,12 +81,7 @@ function confirmRename(uuid: string) {
         "
       />
 
-      <!-- Icône -->
-      <span class="text-cyan-500/70 text-sm shrink-0 select-none">◆</span>
-
-      <!-- Contenu -->
       <div class="flex-1 min-w-0">
-        <!-- Titre (éditable en mode rename) -->
         <input
           v-if="renamingUuid === conv.uuid"
           v-model="renameValue"
@@ -137,23 +133,6 @@ function confirmRename(uuid: string) {
           </svg>
         </button>
 
-        <!-- Dupliquer -->
-        <button class="action-btn" title="Dupliquer" @click="emit('duplicate', conv.uuid)">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            class="size-3"
-          >
-            <path
-              d="M2 4.75A2.75 2.75 0 0 1 4.75 2h4a2.75 2.75 0 0 1 2.739 2.479.75.75 0 1 1-1.492.166A1.25 1.25 0 0 0 8.75 3.5h-4A1.25 1.25 0 0 0 3.5 4.75v4a1.25 1.25 0 0 0 1.145 1.243.75.75 0 1 1-.166 1.492A2.75 2.75 0 0 1 2 8.75v-4Z"
-            />
-            <path
-              d="M7.25 6A2.75 2.75 0 0 0 4.5 8.75v4A2.75 2.75 0 0 0 7.25 15.5h4A2.75 2.75 0 0 0 14 12.75v-4A2.75 2.75 0 0 0 11.25 6h-4Z"
-            />
-          </svg>
-        </button>
-
         <!-- Supprimer -->
         <button
           class="action-btn hover:text-red-400 hover:border-red-500/40 hover:bg-red-950/30"
@@ -180,11 +159,9 @@ function confirmRename(uuid: string) {
 
 <style scoped>
 .conversation-list {
-
 }
 
 .action-btn {
-
 }
 
 /* Animation d'entrée des items */
